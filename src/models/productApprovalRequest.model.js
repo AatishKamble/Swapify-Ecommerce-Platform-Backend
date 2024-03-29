@@ -1,7 +1,13 @@
 import mongoose from "mongoose";
 
-const productSchema = new mongoose.Schema(
+const productApprovalRequestSchema=new mongoose.Schema(
+
     {
+        user:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"users",
+            required:true
+        },
         title: {
             type: String,
             required: true,
@@ -10,7 +16,7 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        price: {
+        expectedPrice: {
             type: Number,
             required: true,
         },
@@ -23,17 +29,18 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        // address:{
-        // type:mongoose.Schema.Types.ObjectId,
-        // ref:'address'
-        // },
+        address:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'address'
+        },
         createdAt: {
             type: Date,
             default: Date.now,
         }
 
-});
+    }
+);
 
-const Product = mongoose.model('products', productSchema);
+const PARequest=mongoose.model("productApprovalRequests",productApprovalRequestSchema);
 
-export default Product;
+export default PARequest;
