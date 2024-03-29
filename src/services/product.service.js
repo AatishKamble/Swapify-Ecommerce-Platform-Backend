@@ -1,9 +1,10 @@
 
 import Categories from '../models/category.model.js';
-import areCategoriesExits from './category.service.js';
-import areLocationExits from './address.service.js';
+
 import Product from '../models/product.model.js';
 import Address from '../models/address.model.js';
+
+
 const createProduct = async (reqData) => {
 
     let topLevelCategory = await Categories.findOne({ name: reqData.topLevelCategory });
@@ -32,19 +33,22 @@ const createProduct = async (reqData) => {
 
 
 
-    let address = await Address.findOne({
-        city: reqData.city,
-        state: reqData.state,
+//     let address = await Address.findOne({
+//          houseNo:reqData.houseNo,
+//         streetAddress:reqData.streetAddress,
+//         city:reqData.city,
+//         state:reqData.state,
+//         zipCode:reqData.zipCode,
+//         user:user._id
+// });
 
-    });
-
-    if (!address) {
-        address = new Address({
-            city: reqData.city,
-            state: reqData.state
-        });
-        await address.save();
-    }
+//     if (!address) {
+//         address = new Address({
+//             city: reqData.city,
+//             state: reqData.state
+//         });
+//         await address.save();
+//     }
 
 
     const product = new Product(
@@ -55,13 +59,33 @@ const createProduct = async (reqData) => {
             price: reqData.price,
             category: secondLevel._id,
             imageURL: reqData.imageUrl,
-            address: address._id,
+            // address: address._id,
 
         }
     );
 
 
     return await product.save();
+}
+
+async function addApprovedProduct(product){
+
+const approvedProduct = new Product(
+        {
+
+            title: product.title,
+            description: product.description,
+            price: product.expectedPrice,
+            category: product. category._id,
+            imageURL: product.imageURL,
+          
+
+        }
+    );
+
+
+    return await approvedProduct.save();
+
 }
 
 
@@ -74,15 +98,17 @@ async function deleteProduct(productId) {
 
 
 async function updateProduct(productId, reqData) {
+   const productUpdated= await Product.findByIdAndUpdate(productId, reqData,{new:true});
 
-    return await Product.findByIdAndUpdate(productId, reqData);
+    return productUpdated;
 
 }
 
 
 
 async function findProductById(productId) {
-    const product = await Product.findById(productId).populate("category").populate("address").exec();
+    const product = await Product.findById(productId).populate("category").exec();
+    // .populate("address");
     if (!product) {
         throw new Error("Product not Found with id " + productId);
     }
@@ -92,11 +118,12 @@ async function findProductById(productId) {
 
 async function getAllProducts(reqQuery) {
    
-    let { category, location, minPrice, maxPrice,sort, pageNumber, pageSize } = reqQuery;
- 
+    let { category, minPrice, maxPrice,sort, pageNumber, pageSize } = reqQuery;
+    // location,
     pageSize = pageSize || 10;
 
-     let query = Product.find().populate("category").populate("address");
+     let query = Product.find().populate("category");
+    //  .populate("address");
 
     
 
@@ -112,15 +139,15 @@ async function getAllProducts(reqQuery) {
  
     }
 
-    if (location) {
-        let locationSet = new Set(location.split(",").map(location => location.trim()));
-        const existingLocations=await Address.find({state:{ $regex: new RegExp([...locationSet].join('|'), 'i') }});
-        if (existingLocations.length>0) {
-          const locationIds=existingLocations.map(location=>location._id);
+    // if (location) {
+    //     let locationSet = new Set(location.split(",").map(location => location.trim()));
+    //     const existingLocations=await Address.find({state:{ $regex: new RegExp([...locationSet].join('|'), 'i') }});
+    //     if (existingLocations.length>0) {
+    //       const locationIds=existingLocations.map(location=>location._id);
          
-            query.where("address").in(locationIds);
-        }
-    }
+    //         query.where("address").in(locationIds);
+    //     }
+    // }
 
     if (minPrice || maxPrice) {
         query.where("price").gte(minPrice).lte(maxPrice);
@@ -169,4 +196,5 @@ export default {
     findProductById,
     getAllProducts,
     createMultipleProducts,
+    addApprovedProduct,
 }

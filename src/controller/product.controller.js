@@ -13,6 +13,7 @@ async function createProduct(req,res){
 
 async function deleteProduct(req,res){
     const productId=req.params.id;
+    console.log(productId)
    
     try {
         const product=await productServices.deleteProduct(productId);
@@ -34,8 +35,10 @@ async function updateProduct(req,res){
 
 async function findProductById(req,res){
     const productId=req.params.id;
+    
     try {
         const product=await productServices.findProductById(productId);
+
         return res.status(201).send(product);
     } catch (error) {
        return res.status(500).send({error:error.massage})
@@ -45,13 +48,13 @@ async function findProductById(req,res){
 async function getAllProducts(req,res){
    
     try {
-    
         const product=await productServices.getAllProducts(req.query);
         return res.status(201).send(product);
     } catch (error) {
        return res.status(500).send({error:error.massage})
     }
 }
+
 
 
 async function createMultipleProducts(req,res){
@@ -71,5 +74,5 @@ export default {
     updateProduct,
     findProductById,
     getAllProducts,
-    createMultipleProducts,
+    createMultipleProducts,//for initally creating domy data
 }
