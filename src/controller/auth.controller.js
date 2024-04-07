@@ -6,9 +6,9 @@ async function register(req, res) {
     try {
         const user = await userService.createUser(req.body);
         
-        let jwttoken = jwtProvider.generateToken(user._id);
+        let jwt = jwtProvider.generateToken(user._id);
         await cartService.createCart(user._id);
-        return res.status(200).send({ jwttoken, message: "Created Successfully" });
+        return res.status(200).send({ jwt, message: "Created Successfully" });
 
     } catch (error) {
         return res.status(500).send({error:error.message});
@@ -20,11 +20,13 @@ async function register(req, res) {
 async function login(req, res) {
     const { email, password } = req.body;
     try {
+        
         const user = await userService.getUserByEmail(email);
+        
         if (!user) {
             return res.status(404).send({ message: "User not found" });
         }
-
+ 
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 

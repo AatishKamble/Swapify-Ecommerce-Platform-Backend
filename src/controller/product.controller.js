@@ -48,6 +48,7 @@ async function findProductById(req,res){
 async function getAllProducts(req,res){
    
     try {
+       
         const product=await productServices.getAllProducts(req.query);
         return res.status(201).send(product);
     } catch (error) {
