@@ -61,9 +61,10 @@ const removeCartItem = async (userId, cartItemId) => {
         }
         if (user._id.toString() === userId.toString()) {
             await CartItem.findByIdAndDelete(item._id);
+            
             cart.cartItems=cart.cartItems.filter(cartItemId => cartItemId.toString() !== item._id.toString())
             await cart.save();
-            return " Cart item Removed Successfully";
+            return item;
         }
 
     } catch (error) {

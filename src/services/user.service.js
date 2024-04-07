@@ -43,19 +43,22 @@ try {
 
 }
 
-async function getUserByEmail(userEmail){
+async function getUserByEmail(userEmail) {
     try {
-        const user=await User.findOne({email:userEmail});
-        if(!user){
-            throw new Error("User not found with email",userEmail);
-     
-         }
-         return user;
-        
+        console.log("Email received:", userEmail);
+        const user = await User.findOne({ email: { $regex: new RegExp(userEmail, "i") } });
+        if (!user) {
+            throw new Error(`User not found with email: ${userEmail}`);
+        }
+        return user;
     } catch (error) {
-        throw new Error(error.message);
+        console.error("Error fetching user:", error);
+        throw new Error("Error fetching user");
     }
 }
+
+
+
 
 
 async function getUserByToken(token){

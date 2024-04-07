@@ -117,11 +117,13 @@ async function findProductById(productId) {
 }
 
 async function getAllProducts(reqQuery) {
-   
-    let { category, minPrice, maxPrice,sort, pageNumber, pageSize } = reqQuery;
-    // location,
-    pageSize = pageSize || 10;
 
+    let { category, minPrice, maxPrice,sort, pageNumber, pageSize } = reqQuery;
+
+    // location,
+    pageSize =parseInt(pageSize)  ;
+    pageNumber=parseInt(pageNumber) 
+   
      let query = Product.find().populate("category");
     //  .populate("address");
 
@@ -129,12 +131,15 @@ async function getAllProducts(reqQuery) {
 
     if (category) {
         let categorySet = new Set(category.split(",").map(category => category.trim()));
-        
+       
         const existingCategories = await Categories.find({ name:{$regex:new RegExp([...categorySet].join("|"),"i")} });
+      
         if (existingCategories.length > 0) {
 
             const categoryIds = existingCategories.map(category => category._id);
-                        query.where("category").in(categoryIds);
+          
+            query.where("category").in(categoryIds);
+       
         } 
  
     }
@@ -149,7 +154,7 @@ async function getAllProducts(reqQuery) {
     //     }
     // }
 
-    if (minPrice || maxPrice) {
+    if (minPrice || maxPrice )  {
         query.where("price").gte(minPrice).lte(maxPrice);
     }
 
@@ -158,7 +163,7 @@ async function getAllProducts(reqQuery) {
         {
           query.sort({price:1});   
         }
-        else if(sort==="by-date"){
+        else if(sort==="Date-Created"){
             query.sort({createdAt:-1});
         }
         else{
@@ -169,8 +174,12 @@ async function getAllProducts(reqQuery) {
    
 
     const totalProduct = await Product.countDocuments(query);
-const skip = (pageNumber - 1) * pageSize;
+  if(pageNumber !==0 && pageSize !==0){
+
+    const skip = (pageNumber - 1) * pageSize;
 query = query.skip(skip).limit(pageSize);
+  }
+
 const products = await query.exec();
 
 const totalPages = Math.ceil(totalProduct / pageSize);
