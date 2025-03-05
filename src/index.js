@@ -37,9 +37,13 @@ import adminProductRouter from "../src/routes/adminProducts.route.js";
 app.use("/api/admin/products",adminProductRouter);//working
 
 import pARUserRouter from "../src/routes/userPAR.route.js";
-app.use("/api/user/product-request",pARUserRouter);//one remaining
+app.use("/api/user/sell-product",pARUserRouter);//one remaining
 
 
 import adminPARRouter from "../src/routes/adminPAR.route.js";
 app.use("/api/admin/product_request",adminPARRouter);//working
+
+
+import addressRouter from "../src/routes/Address.route.js";
+app.use("/api/address",addressRouter);
 export default app;

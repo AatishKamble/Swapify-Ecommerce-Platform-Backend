@@ -20,7 +20,7 @@ async function getUserCart(userId) {
         const cart = await Cart.findOne({ user: userId }).populate("cartItems");
        
         let cartItems = await CartItem.find({ cart: cart._id }).populate("product");
-
+       
         cart.cartItems = cartItems;
 
         let totalPrice = 0;
@@ -45,10 +45,15 @@ const addToCart = async (userId,reqData) => {
 
     try {
         const cart = await Cart.findOne({ user: userId });
+        if(!cart){
+            throw new Error ("Cart not found",userId)
+        }
         const product=await productService.findProductById(reqData.productId);
-
-        const isPresent=await CartItem.findOne({cart:cart._id,product:product._id,userId});
+    
+        const isPresent=await CartItem.findOne({cart:cart._id,product:product._id,user:userId});
+       
         if(!isPresent){
+          
             const cartItem=new CartItem({
                 cart:cart._id,
                 product:product._id,
@@ -58,6 +63,7 @@ const addToCart = async (userId,reqData) => {
             });
            const createdCart=await cartItem.save();
             cart.cartItems.push(createdCart);
+            
             await cart.save();
           
         }

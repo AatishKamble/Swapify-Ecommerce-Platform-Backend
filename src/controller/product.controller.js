@@ -69,6 +69,8 @@ async function createMultipleProducts(req,res){
 }
 
 
+
+
 export default {
     createProduct,
     deleteProduct,
@@ -76,4 +78,5 @@ export default {
     findProductById,
     getAllProducts,
     createMultipleProducts,//for initally creating domy data
+   
 }

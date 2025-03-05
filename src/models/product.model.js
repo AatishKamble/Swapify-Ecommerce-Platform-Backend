@@ -23,10 +23,6 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        // address:{
-        // type:mongoose.Schema.Types.ObjectId,
-        // ref:'address'
-        // },
         createdAt: {
             type: Date,
             default: Date.now,
