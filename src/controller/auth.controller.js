@@ -4,6 +4,7 @@ import cartService from "../services/cart.service.js";
 import bcrypt from "bcrypt";
 async function register(req, res) {
     try {
+        
         const user = await userService.createUser(req.body);
         
         let jwt = jwtProvider.generateToken(user._id);

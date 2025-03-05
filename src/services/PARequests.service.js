@@ -4,70 +4,74 @@ import Address from "../models/address.model.js";
 import userService from "../services/user.service.js";
 import productService from "./product.service.js";
 async function createProductRequest(userId, reqData) {
-
     const user = await userService.getUserById(userId);
     if (!user) {
-        throw new Error("User not found with id", userId);
+        throw new Error(`User not found with id: ${userId}`);
+
     }
     
-
-    let topLevelCategory = await Categories.findOne({ name: reqData.topLevelCategory });
+    let topLevelCategory = await Categories.findOne({ name: reqData.mainCategory });
     if (!topLevelCategory) {
-        topLevelCategory = new Categories({
-            name: reqData.topLevelCategory,
+        topLevelCategory = new Category({
+            name: reqData.mainCategory,
             level: 1
         });
         await topLevelCategory.save();
     }
-    let secondLevelCategory = await Categories.findOne({ name: reqData.secondLevelCategory });
+    
+    let secondLevelCategory = await Categories.findOne({ name: reqData.subcategory });
     if (!secondLevelCategory) {
-        secondLevelCategory = new Categories({
-            name: reqData.secondLevelCategory,
-            parentCategory: topLevelCategory,
+        secondLevelCategory = new Category({
+            name: reqData.subcategory,
+            parentCategory: topLevelCategory._id,
             level: 2
         });
         await secondLevelCategory.save();
     }
-
+    
     let address = await Address.findOne({
-        firstName:reqData.firstName,
-        lastName:reqData.lastName,
-        mobile:reqData.mobile,
-         houseNo:reqData.houseNo,
-        streetAddress:reqData.streetAddress,
-        city:reqData.city,
-        state:reqData.state,
-        zipCode:reqData.zipCode,
-        user:user._id
-   });
+        street: reqData.address.street,
+        village: reqData.address.village,
+        city: reqData.address.city,
+        state: reqData.address.state,
+        pincode: reqData.address.pincode,
+        user: user._id
+    });
+    
 
     if (!address) {
         address = new Address({
-            firstName:reqData.firstName,
-            lastName:reqData.lastName,
-            mobile:reqData.mobile,
-             houseNo:reqData.houseNo,
-            streetAddress:reqData.streetAddress,
-            city:reqData.city,
-            state:reqData.state,
-            zipCode:reqData.zipCode,
-            user:user._id
+            street: reqData.address.street,
+            village: reqData.address.village,
+            city: reqData.address.city,
+            state: reqData.address.state,
+            pincode: reqData.address.pincode,
+            user: user._id
         });
         await address.save();
     }
 
     const productRequest = new PARequest({
         user: user._id,
-        title: reqData.title,
-        description: reqData.description,
+        productName: reqData.productName,
+        productDescription: reqData.productDescription,
         expectedPrice: reqData.expectedPrice,
         category: secondLevelCategory._id,
-        imageURL: reqData.imageUrl,
-        address: address._id,
+        images: Array.isArray(reqData.images) 
+            ? reqData.images.filter(img => typeof img === 'string' && img.trim() !== '') 
+            : [], // Ensure only valid strings are stored
+        address: [address._id], 
     });
+    
+   
 
-    return await productRequest.save();
+    const newRequest = await productRequest.save();
+    user.productRequests.push(newRequest._id);
+    await user.save(); 
+
+    return newRequest;
 }
+
 
 
 

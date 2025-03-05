@@ -29,7 +29,7 @@ return user;
 async function getUserById(userId){
 try {
 
-    const user=await User.findById(userId);
+    const user=await User.findById(userId).populate("productRequests");
    
     if(!user){
        throw new Error("User not found with id "+userId);
@@ -72,6 +72,7 @@ async function getUserByToken(token){
             throw new Error("User not found with id",userId);
      
          }
+
          return user;
         
     } catch (error) {

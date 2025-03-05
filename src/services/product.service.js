@@ -108,7 +108,9 @@ async function updateProduct(productId, reqData) {
 
 async function findProductById(productId) {
     const product = await Product.findById(productId).populate("category").exec();
+    
     // .populate("address");
+
     if (!product) {
         throw new Error("Product not Found with id " + productId);
     }
@@ -198,6 +200,11 @@ async function createMultipleProducts(products) {
 }
 
 
+
+
+
+
+
 export default {
     createProduct,
     deleteProduct,
@@ -206,4 +213,5 @@ export default {
     getAllProducts,
     createMultipleProducts,
     addApprovedProduct,
+    
 }
