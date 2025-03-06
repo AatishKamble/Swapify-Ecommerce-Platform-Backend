@@ -137,13 +137,41 @@ async function deleteProductRequest(userId,productId){
             throw new Error("user not found with id",userId);
         }
         const product=await findProductByProductRequestId(productId);
-        await PARequest.findByIdAndDelete(productId);
-        return "product request deleted";
+        product.state = "cancelrequest";
+        await product.save();
+        return product._id;
     } catch (error) {
         throw new Error(error.message);
     }
    
 }
+
+
+async function findProductReq(reqQuery) {
+   
+    let query = PARequest.find({user:reqQuery}).populate("category").populate("address");
+    return { content: productRequests, currentPage: pageNumber, totalPages };
+
+}
+
+const uploadImage = async (user, filesUrl) => {
+    try {
+    
+  const newService=await PARequest.findByIdAndUpdate(
+    {user:user},
+    {images:filesUrl},
+    { new: true }
+  );
+  
+  
+  return newService;
+  
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  
+  
+  }
 
 
 export default {
@@ -152,6 +180,8 @@ export default {
     findProductByProductRequestId,
     approveProductRequest,
     deleteProductRequest,
-    rejectProductRequest
+    rejectProductRequest,
+    findProductReq,
+    uploadImage
 
 }

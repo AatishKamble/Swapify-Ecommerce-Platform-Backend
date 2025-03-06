@@ -22,6 +22,10 @@ const productApprovalRequestSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    state:{
+        type:String,
+        default:"sellrequest",
+    },
     images: [{
         type: String,
         required: true,
