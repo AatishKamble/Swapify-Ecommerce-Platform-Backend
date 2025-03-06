@@ -29,7 +29,15 @@ return user;
 async function getUserById(userId){
 try {
 
-    const user=await User.findById(userId).populate("productRequests");
+    const user = await User.findById(userId).populate({
+        path: "productRequests",
+        populate: [
+          { path: "address" },
+          { path: "category", populate: { path: "parentCategory" } }
+        ]
+      });
+      
+      
    
     if(!user){
        throw new Error("User not found with id "+userId);
