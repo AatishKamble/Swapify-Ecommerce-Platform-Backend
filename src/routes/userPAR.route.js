@@ -6,8 +6,8 @@ import upload from "../config/UploadMulter.js";
 const route=express.Router();
 
 route.post("/",authenticate,upload.array("productimages"),PARUserController.createProductRequest);//working
-route.delete("/id/:id",authenticate,PARUserController.deleteProductRequest);//working
-route.get('/:id',authenticate,PARequestController.findProductByProductRequestId)//working
+route.post("/id/:id",authenticate,upload.none(),PARUserController.deleteProductRequest);//working
+route.get('/:id',authenticate,upload.none(),PARequestController.findProductByProductRequestId)//working
 route.get('/',authenticate,PARequestController.findProductReq)//working
 
 

@@ -27,8 +27,14 @@ const productApprovalRequestSchema = new mongoose.Schema({
         default:"sellrequest",
     },
     images: [{
-        type: String,
-        required: true,
+        imageUrl:{
+            type:String,
+            required:false
+        },
+    publicId:{
+        type:String,
+        required:false
+    }
     }],
     address: [{
         type: mongoose.Schema.Types.ObjectId,

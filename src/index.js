@@ -6,11 +6,10 @@ import "dotenv/config";
 
 const app=express();
 
-app.use('/api/images',express.static("uploads"));
 
 app.use(express.json());
 app.use(cors());
-
+express.urlencoded({ extended: true })
 app.get("/",(req,res)=>{
     res.status(200).send({massage:"Welcome to Swapify API",status:true});
 });
@@ -21,6 +20,7 @@ app.use("/api/auth",authRouter);//working
 import userRouter from "./routes/users.routes.js";
 app.use("/api/users",userRouter);//working
 
+app.use('/api/images',express.static("uploads"));
 
 import adminRouter from "./routes/adminOrder.route.js";
 app.use("/api/admin/orders",adminRouter);//working
@@ -48,7 +48,7 @@ app.use("/api/user/sell-product",pARUserRouter);//one remaining
 import adminPARRouter from "../src/routes/adminPAR.route.js";
 app.use("/api/admin/product_request",adminPARRouter);//working
 
-
+ 
 import addressRouter from "../src/routes/Address.route.js";
 app.use("/api/address",addressRouter);
 export default app;

@@ -5,7 +5,7 @@ import PARequestsService from "../services/PARequests.service.js";
 
 async function getAllProductRequests(req, res) {
     try {
-        const PARequest = await PARequestsService.getAllProductRequests(req.query);
+        const PARequest = await PARequestsService.getAllProductRequests(req.params.id);
         return res.status(200).send(PARequest);
     } catch (error) {
         return res.status(404).send({ error: error.message })
@@ -49,49 +49,18 @@ async function rejectProductRequest(req, res) {
 
 async function findProductReq(req, res) {
     try {
-        const PARequest = await PARequestsService.findProductReq(req.params.id);
+       
+        const PARequest = await PARequestsService.findProductReq(req.user?._id);
+       
         return res.status(200).send(PARequest);
     } catch (error) {
+       
         return res.status(404).send({ error: error.message })
     }
 }
 
 
 
-const uploadImage = async (req, res) => {
-
-    try {
-
-        const userId = req.user._id;
-        const files = req.files.length > 0 && req.files;
-        let filesUrl = [];
-        //for storing multiple images on cloudinary
-        for(const file of files){
-            const uploadedImage=await uploadOnCloudinary(file.path);
-            if(uploadedImage){
-                filesUrl.push({
-                imageUrl:uploadedImage?.secure_url,
-                publicId:uploadedImage?.public_id
-            });
-            }
-            else{
-                throw new Error("Not Uploaded on Cloudinary")
-            }
-            
-
-        }
-       
-        
-        const service = await PARequestsService.uploadImage(userId,filesUrl);
-        return res.json({ success: true, message:'Images uploaded Successfully', product: service });
-    } catch (error) {
-
-        return res.json({ success: false, message: error.message });
-    }
-
-
-
-}
 
 
 export default {
@@ -100,7 +69,7 @@ export default {
     approveProductRequest,
     rejectProductRequest,
     findProductReq,
-    uploadImage
+
 
 }
 
