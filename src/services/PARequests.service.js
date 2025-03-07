@@ -140,7 +140,7 @@ try {
      await product.save();
 
 
-     return await getAllProductRequests();;
+     return await getAllProductRequests();
 
 } catch (error) {
     throw new Error(error.message);
@@ -157,7 +157,9 @@ async function rejectProductRequest(productId){
        
          product.state="Request_Rejected";
          await product.save();
-         return product._id;
+         
+         return await getAllProductRequests();
+
 
         
         
