@@ -105,20 +105,17 @@ const add = JSON.parse(reqData.address);
 
 
 
-async function getAllProductRequests(reqQuery) {
-    let { pageNumber, pageSize } = reqQuery;
+async function getAllProductRequests() {
+    
 
-    pageSize = pageSize || 50;
-
-    let query = PARequest.find().populate("category").populate("address");
+    let query = PARequest.find().populate("user").populate("category").populate("address"); //{state:"sellrequest"}
 
     let totalRequests = await PARequest.countDocuments(query);
-    const skip = (pageNumber - 1) * pageSize;
-    query = query.skip(skip).limit(pageSize);
+    
 
     const productRequests = await query.exec();
-    const totalPages = Math.ceil(totalRequests / pageSize);
-    return { content: productRequests, currentPage: pageNumber, totalPages };
+    const totalPages = Math.ceil(totalRequests / 10);
+    return { content: productRequests,totalPages };
 
 }
 
@@ -133,14 +130,15 @@ async function findProductByProductRequestId(productId) {
 
 async function approveProductRequest(productId){
 try {
-    const product=await findProductByProductRequestId(productId);
+    const product= await findProductByProductRequestId(productId);
     if (!product) {
         throw new Error("Product not Found with id " + productId);
     }
    
-     const productApproved=await productService.addApprovedProduct(product);
-    await deleteProductRequest(product.user,product._id);
-     return productApproved;
+     await productService.addApprovedProduct(product);
+     product.state="Request_Approved";
+     await product.save();
+     return product._id;
 
 } catch (error) {
     throw new Error(error.message);
@@ -151,8 +149,16 @@ try {
 async function rejectProductRequest(productId){
     try {
         const product=await findProductByProductRequestId(productId);
-        await PARequest.findByIdAndDelete(productId);
-        return "product request rejected";
+        if (!product) {
+            throw new Error("Product not Found with id " + productId);
+        }
+       
+         product.state="Request_Rejected";
+         await product.save();
+         return product._id;
+
+        
+        
     } catch (error) {
         throw new Error(error.message);
     }

@@ -5,8 +5,8 @@ import PARequestsService from "../services/PARequests.service.js";
 
 async function getAllProductRequests(req, res) {
     try {
-        const PARequest = await PARequestsService.getAllProductRequests(req.params.id);
-        return res.status(200).send(PARequest);
+        const PARequesyt = await PARequestsService.getAllProductRequests();
+        return res.status(200).send(PARequesyt);
     } catch (error) {
         return res.status(404).send({ error: error.message })
     }
