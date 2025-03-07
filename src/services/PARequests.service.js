@@ -138,7 +138,9 @@ try {
      await productService.addApprovedProduct(product);
      product.state="Request_Approved";
      await product.save();
-     return product._id;
+
+
+     return await getAllProductRequests();;
 
 } catch (error) {
     throw new Error(error.message);
