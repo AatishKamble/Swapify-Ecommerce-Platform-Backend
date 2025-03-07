@@ -46,6 +46,7 @@ async function findProductById(req,res){
 }
 
 async function getAllProducts(req,res){
+    console.log("sdf");
    
     try {
        

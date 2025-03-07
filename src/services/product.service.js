@@ -73,11 +73,11 @@ async function addApprovedProduct(product){
 const approvedProduct = new Product(
         {
 
-            title: product.title,
-            description: product.description,
+            title: product.productName,
+            description: product.productDescription,
             price: product.expectedPrice,
-            category: product. category._id,
-            imageURL: product.imageURL,
+            category: product.category._id,
+            imageURL: product.images[0].imageUrl,
           
 
         }
@@ -184,7 +184,11 @@ query = query.skip(skip).limit(pageSize);
 
 const products = await query.exec();
 
+
 const totalPages = Math.ceil(totalProduct / pageSize);
+
+console.log("product",products,totalPages,totalProduct);
+
 return { content: products, currentPage: pageNumber, totalPages };
 }
 
