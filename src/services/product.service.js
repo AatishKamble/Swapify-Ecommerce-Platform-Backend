@@ -32,25 +32,6 @@ const createProduct = async (reqData) => {
     }
 
 
-
-//     let address = await Address.findOne({
-//          houseNo:reqData.houseNo,
-//         streetAddress:reqData.streetAddress,
-//         city:reqData.city,
-//         state:reqData.state,
-//         zipCode:reqData.zipCode,
-//         user:user._id
-// });
-
-//     if (!address) {
-//         address = new Address({
-//             city: reqData.city,
-//             state: reqData.state
-//         });
-//         await address.save();
-//     }
-
-
     const product = new Product(
         {
 
@@ -70,22 +51,21 @@ const createProduct = async (reqData) => {
 
 async function addApprovedProduct(product){
 
-const approvedProduct = new Product(
-        {
+    let p= product.expectedPrice + (product.expectedPrice*0.1);
 
+    const approvedProduct = new Product(
+        {
             title: product.productName,
             description: product.productDescription,
-            price: product.expectedPrice,
+            price: p,
             category: product.category._id,
             imageURL: product.images[0].imageUrl,
-          
-
+            state: 'Unsold'
         }
     );
-
-
+    
+    
     return await approvedProduct.save();
-
 }
 
 
@@ -119,80 +99,111 @@ async function findProductById(productId) {
 }
 
 async function getAllProducts(reqQuery) {
+    let { category, minPrice, maxPrice, sort, pageNumber, pageSize } = reqQuery;
 
-    let { category, minPrice, maxPrice,sort, pageNumber, pageSize } = reqQuery;
+    // Parse numeric parameters
+    pageSize = parseInt(pageSize) || 10;
+    pageNumber = parseInt(pageNumber) || 1;
+    minPrice = minPrice ? parseInt(minPrice) : 0;
+    maxPrice = maxPrice ? parseInt(maxPrice) : 1000000;
 
-    // location,
-    pageSize =parseInt(pageSize)  ;
-    pageNumber=parseInt(pageNumber) 
-   
-     let query = Product.find().populate("category");
-    //  .populate("address");
+    // Base query to find only unsold products
+    let baseQuery = {
+        $or: [
+            { state: "Unsold" },
+            { state: { $exists: false } },
+            { state: null },
+            { state: "" },
+            { state: "Request_Approved" }
+        ]
+    };
 
-    
-
+    // Handle category search
     if (category) {
-        let categorySet = new Set(category.split(",").map(category => category.trim()));
-       
-        const existingCategories = await Categories.find({ name:{$regex:new RegExp([...categorySet].join("|"),"i")} });
-      
-        if (existingCategories.length > 0) {
-
-            const categoryIds = existingCategories.map(category => category._id);
-          
-            query.where("category").in(categoryIds);
-       
-        } 
- 
+        // Clean up and normalize category input - handle various formats
+        let categoryString = category.toString().trim();
+        
+        // Split by commas, colons, or multiple spaces and clean up
+        const categoryTerms = categoryString
+            .replace(/\s*:\s*/g, ',')  // Replace colons with commas
+            .split(',')
+            .map(term => term.trim())
+            .filter(Boolean);
+        
+        if (categoryTerms.length > 0) {
+            // Find all matching categories (direct matches)
+            const directMatches = await Categories.find({
+                name: { $regex: new RegExp(categoryTerms.map(term => 
+                    term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i') }
+            });
+            
+            // Create a set to hold all relevant category IDs
+            const allCategoryIds = new Set();
+            
+            // Process each direct match
+            for (const match of directMatches) {
+                // Add this category
+                allCategoryIds.add(match._id);
+                
+                // If this is a parent category (level === 1), find and add all its children
+                if (match.level === 1) {
+                    const children = await Categories.find({ parentCategory: match._id });
+                    children.forEach(child => allCategoryIds.add(child._id));
+                }
+            }
+            
+            if (allCategoryIds.size > 0) {
+                baseQuery.category = { $in: Array.from(allCategoryIds) };
+            }
+        }
     }
 
-    // if (location) {
-    //     let locationSet = new Set(location.split(",").map(location => location.trim()));
-    //     const existingLocations=await Address.find({state:{ $regex: new RegExp([...locationSet].join('|'), 'i') }});
-    //     if (existingLocations.length>0) {
-    //       const locationIds=existingLocations.map(location=>location._id);
-         
-    //         query.where("address").in(locationIds);
-    //     }
-    // }
-
-    if (minPrice || maxPrice )  {
-        query.where("price").gte(minPrice).lte(maxPrice);
+    // Add price filter
+    if (minPrice || maxPrice) {
+        baseQuery.price = {};
+        if (minPrice) baseQuery.price.$gte = minPrice;
+        if (maxPrice) baseQuery.price.$lte = maxPrice;
     }
 
-    if(sort){
-        if(sort==="asc-price")
-        {
-          query.sort({price:1});   
+    // Create the query
+    let query = Product.find(baseQuery).populate("category");
+
+    // Apply sorting
+    if (sort) {
+        if (sort === "asc-price") {
+            query = query.sort({ price: 1 });
+        } else if (sort === "Date-Created") {
+            query = query.sort({ createdAt: -1 });
+        } else {
+            query = query.sort({ price: -1 });
         }
-        else if(sort==="Date-Created"){
-            query.sort({createdAt:-1});
-        }
-        else{
-            query.sort({price:-1}); 
-        }
-       
+    } else {
+        // Default sorting
+        query = query.sort({ createdAt: -1 });
     }
-   
 
-    const totalProduct = await Product.countDocuments(query);
-  if(pageNumber !==0 && pageSize !==0){
+    // Count total products for pagination
+    const totalProduct = await Product.countDocuments(baseQuery);
 
-    const skip = (pageNumber - 1) * pageSize;
-query = query.skip(skip).limit(pageSize);
-  }
+    // Apply pagination
+    if (pageNumber !== 0 && pageSize !== 0) {
+        const skip = (pageNumber - 1) * pageSize;
+        query = query.skip(skip).limit(pageSize);
+    }
 
-const products = await query.exec();
+    // Execute the query
+    const products = await query.exec();
 
+    // Calculate total pages
+    const totalPages = Math.ceil(totalProduct / pageSize);
 
-const totalPages = Math.ceil(totalProduct / pageSize);
-
-console.log("product",products,totalPages,totalProduct);
-
-return { content: products, currentPage: pageNumber, totalPages };
+    return { 
+        content: products, 
+        currentPage: pageNumber, 
+        totalPages,
+        totalItems: totalProduct
+    };
 }
-
-
 
 async function createMultipleProducts(products) {
 
@@ -204,11 +215,6 @@ async function createMultipleProducts(products) {
 }
 
 
-
-
-
-
-
 export default {
     createProduct,
     deleteProduct,
@@ -217,5 +223,4 @@ export default {
     getAllProducts,
     createMultipleProducts,
     addApprovedProduct,
-    
 }
