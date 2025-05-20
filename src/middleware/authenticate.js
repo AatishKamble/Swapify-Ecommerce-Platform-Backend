@@ -1,5 +1,6 @@
 import jwtProvider from "../config/jwtProvider.js";
 import userService from "../services/user.service.js";
+
 async function authenticate(req,res,next){
    
     try {

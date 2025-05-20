@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const cartSchema=new mongoose.Schema(
+const cartSchema = new mongoose.Schema(
     {
         user:{
             type:mongoose.Schema.Types.ObjectId,
@@ -23,7 +23,6 @@ const cartSchema=new mongoose.Schema(
             required:true,
             default:0
         }
-
     }
 );
 

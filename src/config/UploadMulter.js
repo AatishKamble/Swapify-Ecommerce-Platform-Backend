@@ -10,7 +10,7 @@ return cb(null,`${Date.now()}${file.originalname}`);
 });
 
 const isImage=(req,file,cb)=>{
-  console.log("in mul",file)
+  // console.log("in mul",file)
     if(file.mimetype.startsWith("image/")){
         cb(null,true);
     }else {
