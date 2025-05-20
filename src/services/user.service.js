@@ -47,7 +47,7 @@ async function getUserByEmail(userEmail) {
         }
         return user
     } catch (error) {
-        console.error("Error fetching user:", error)
+       
         throw new Error("Error fetching user")
     }
 }
